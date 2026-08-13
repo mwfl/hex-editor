@@ -6,20 +6,20 @@ permissions:
   contents: write
 jobs:
   release:
-    runs-on: windows-2022
+    runs-on: windows-2025-vs2026
     steps:
       - uses: actions/checkout@v5
-      - run: cmake --preset vs2022-x64
+      - run: cmake --preset vs2026-x64
         name: Configure
-      - run: cmake --build --preset vs2022-x64-release --parallel 2
+      - run: cmake --build --preset vs2026-x64-release --parallel 2
         name: Build
-      - run: ctest --test-dir build/vs2022-x64 -C Release --output-on-failure
+      - run: ctest --preset vs2026-x64-release
         name: Test
       - name: Package portable app
         shell: pwsh
         run: |
           $archive = "hex-editor-$env:GITHUB_REF_NAME-windows-x64-portable.zip"
-          cmake --install build/vs2022-x64 --config Release --prefix package --component Application
+          cmake --install build/vs2026-x64 --config Release --prefix package --component Application
           Compress-Archive -Path package/* -DestinationPath $archive
           (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant() + "  " + $archive |
             Set-Content "$archive.sha256"

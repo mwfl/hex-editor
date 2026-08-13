@@ -33,8 +33,10 @@ cmake --build --preset vs2026-x64-release
 ctest --preset vs2026-x64-release
 ```
 
-Visual Studio 2022 is supported through `vs2022-x64`. Standalone builds fetch
-the pinned MWFL v0.1.2 source. The portable package has no installer.
+Visual Studio 2026 with its MSVC C++20 toolchain is the supported build
+environment. The preset uses a neighboring MWFL checkout for development; set
+`HEX_EDITOR_USE_LOCAL_MWFL=OFF` to fetch pinned MWFL v0.1.2. The portable package
+has no installer.
 
 ## Editing safety
 
