@@ -22,7 +22,7 @@ public:
         view_.SetDocument(&document_); view_.SetAppearance(GetAppearanceState()); view_.changed = [this] { RefreshState(); };
         SetLayout(mwfl::Column().Gap(7.0_dip).Margin(10.0_dip)
             .Add(mwfl::Row().Gap(6.0_dip).Add(open_,mwfl::Fixed(84.0_dip)).Add(edit_,mwfl::Fixed(128.0_dip)).Add(save_,mwfl::Fixed(124.0_dip)).Add(save_as_,mwfl::Fixed(94.0_dip)).Add(undo_,mwfl::Fixed(72.0_dip)).Add(mwfl::Column(),mwfl::Stretch()),mwfl::Fixed(34.0_dip))
-            .Add(mwfl::Row().Gap(6.0_dip).Add(find_,mwfl::Stretch()).Add(search_,mwfl::Fixed(90.0_dip)).Add(offset_,mwfl::Fixed(130.0_dip)).Add(go_,mwfl::Fixed(58.0_dip)),mwfl::Fixed(34.0_dip))
+            .Add(mwfl::Row().Gap(6.0_dip).Add(find_,mwfl::Stretch()).Add(search_,mwfl::Fixed(90.0_dip)).Add(offset_,mwfl::Fixed(130.0_dip)).Add(go_,mwfl::Fixed(46.0_dip)),mwfl::Fixed(34.0_dip))
             .Add(view_,mwfl::Stretch())
             .Add(mwfl::Row().Gap(8.0_dip).Add(status_,mwfl::Stretch()).Add(inspector_,mwfl::Fixed(350.0_dip)),mwfl::Fixed(28.0_dip)));
         save_.SetEnabled(false); save_as_.SetEnabled(false); undo_.SetEnabled(false);
