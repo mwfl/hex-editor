@@ -6,6 +6,8 @@ MWFL Hex Editor is a safety-focused native Windows binary editor. It opens every
 file read-only, presents synchronized offset, hexadecimal, and ASCII columns,
 and makes editing an explicit overwrite-only mode.
 
+![MWFL Hex Editor displaying a Windows executable in read-only mode](docs/images/hex-editor.jpg)
+
 ## Features
 
 - Open arbitrary files up to 256 MiB; no file type assumptions.
