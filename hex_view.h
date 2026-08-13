@@ -13,8 +13,10 @@ public:
     void Select(std::size_t offset) noexcept;
     std::size_t Selection() const noexcept { return selection_; }
     std::function<void()> changed;
-private:
+    // Public only so the Win32 class registration helper can take its address;
+    // all messages immediately route to the private instance handler.
     static LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM) noexcept;
+private:
     LRESULT Handle(HWND, UINT, WPARAM, LPARAM) noexcept;
     void Paint(HWND) noexcept;
     void EnsureVisible(HWND) noexcept;
