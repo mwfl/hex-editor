@@ -1,4 +1,5 @@
 #include "hex_document.h"
+#include <array>
 #include <cassert>
 #include <fstream>
 
