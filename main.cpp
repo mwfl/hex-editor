@@ -4,10 +4,11 @@
 #include "resource.h"
 #include <shellapi.h>
 #include <memory>
+#include <vector>
 
 using mwfl::operator""_dip;
 namespace {
-constexpr mwfl::ControlId kOpen{100}, kEdit{101}, kSave{102}, kSaveAs{103}, kUndo{104}, kFind{105}, kSearch{106}, kGoto{107}, kOffset{108}, kView{109};
+constexpr mwfl::ControlId kOpen{100}, kEdit{101}, kSave{102}, kSaveAs{103}, kUndo{104}, kFind{105}, kSearch{106}, kGoto{107}, kOffset{108}, kView{109}, kZoomOut{110}, kZoomReset{111}, kZoomIn{112};
 constexpr UINT kRunSelfTest = WM_APP + 0x381;
 
 class MainWindow final : public mwfl::WindowBase {
@@ -15,13 +16,13 @@ public:
     void BuildUI() override {
         SetTitle(L"MWFL Hex Editor — read-only");
         mwfl::ControlHost ui{*this};
-        ui.Add(open_, kOpen, L"Open…"); ui.Add(edit_, kEdit, L"Enable editing"); ui.Add(save_, kSave, L"Save + backup"); ui.Add(save_as_, kSaveAs, L"Save As…"); ui.Add(undo_, kUndo, L"Undo");
+        ui.Add(open_, kOpen, L"Open…"); ui.Add(edit_, kEdit, L"Enable editing"); ui.Add(save_, kSave, L"Save + backup"); ui.Add(save_as_, kSaveAs, L"Save As…"); ui.Add(undo_, kUndo, L"Undo"); ui.Add(zoom_out_, kZoomOut, L"−"); ui.Add(zoom_reset_, kZoomReset, L"100%"); ui.Add(zoom_in_, kZoomIn, L"+");
         ui.Add(find_, kFind, L""); find_.SetCueBanner(L"Hex bytes: 89 50 4E 47"); ui.Add(search_, kSearch, L"Find next");
         ui.Add(offset_, kOffset, L""); offset_.SetCueBanner(L"Offset (hex)"); ui.Add(go_, kGoto, L"Go"); ui.AddNative(view_, kView, mwfl::RectDip{});
         ui.Add(status_, L"Open any file. Viewing is read-only by default."); ui.Add(inspector_, L"Selection: —");
-        view_.SetDocument(&document_); view_.SetAppearance(GetAppearanceState()); view_.changed = [this] { RefreshState(); };
+        view_.SetDocument(&document_); view_.SetAppearance(GetAppearanceState()); view_.changed = [this] { RefreshState(); }; view_.zoom_changed = [this] { UpdateZoomLabel(); };
         SetLayout(mwfl::Column().Gap(7.0_dip).Margin(10.0_dip)
-            .Add(mwfl::Row().Gap(6.0_dip).Add(open_,mwfl::Fixed(84.0_dip)).Add(edit_,mwfl::Fixed(128.0_dip)).Add(save_,mwfl::Fixed(124.0_dip)).Add(save_as_,mwfl::Fixed(94.0_dip)).Add(undo_,mwfl::Fixed(72.0_dip)).Add(mwfl::Column(),mwfl::Stretch()),mwfl::Fixed(34.0_dip))
+            .Add(mwfl::Row().Gap(6.0_dip).Add(open_,mwfl::Fixed(84.0_dip)).Add(edit_,mwfl::Fixed(128.0_dip)).Add(save_,mwfl::Fixed(124.0_dip)).Add(save_as_,mwfl::Fixed(94.0_dip)).Add(undo_,mwfl::Fixed(72.0_dip)).Add(mwfl::Column(),mwfl::Stretch()).Add(zoom_out_,mwfl::Fixed(38.0_dip)).Add(zoom_reset_,mwfl::Fixed(58.0_dip)).Add(zoom_in_,mwfl::Fixed(38.0_dip)),mwfl::Fixed(34.0_dip))
             .Add(mwfl::Row().Gap(6.0_dip).Add(find_,mwfl::Stretch()).Add(search_,mwfl::Fixed(90.0_dip)).Add(offset_,mwfl::Fixed(130.0_dip)).Add(go_,mwfl::Fixed(46.0_dip)),mwfl::Fixed(34.0_dip))
             .Add(view_,mwfl::Stretch())
             .Add(mwfl::Row().Gap(8.0_dip).Add(status_,mwfl::Stretch()).Add(inspector_,mwfl::Fixed(350.0_dip)),mwfl::Fixed(28.0_dip)));
@@ -36,6 +37,9 @@ public:
         if (event.IsClicked(save_)) { SaveOriginal(); return mwfl::EventResult::Handled(); }
         if (event.IsClicked(save_as_)) { SaveAs(); return mwfl::EventResult::Handled(); }
         if (event.IsClicked(undo_)) { document_.Undo(); RefreshState(); return mwfl::EventResult::Handled(); }
+        if (event.IsClicked(zoom_out_)) { view_.DecreaseFontSize(); UpdateZoomLabel(); return mwfl::EventResult::Handled(); }
+        if (event.IsClicked(zoom_reset_)) { view_.ResetFontSize(); UpdateZoomLabel(); return mwfl::EventResult::Handled(); }
+        if (event.IsClicked(zoom_in_)) { view_.IncreaseFontSize(); UpdateZoomLabel(); return mwfl::EventResult::Handled(); }
         if (event.IsClicked(search_)) { FindNext(); return mwfl::EventResult::Handled(); }
         if (event.IsClicked(go_)) { GoTo(); return mwfl::EventResult::Handled(); }
         return mwfl::EventResult::Propagate();
@@ -59,8 +63,13 @@ private:
     void SaveAs(){ mwfl::FileDialogOptions options{.owner=GetHwnd(),.title=L"Save edited bytes as",.filters={{L"All files",L"*.*"}},.initial_path=document_.Path().filename()}; auto r=mwfl::ShowSaveFileDialog(options); if(!r.accepted)return; auto saved=document_.SaveAs(r.path); if(!saved.succeeded)ShowError(saved.error); else {editing_=false;view_.SetEditable(false);RefreshState();} }
     void SaveOriginal(){ if(document_.HasExternalChange()){ShowError(L"The original file changed outside Hex Editor. Reopen it or use Save As.");return;} if(::MessageBoxW(GetHwnd(),L"Replace the original file with the edited bytes? A .bak copy of the original will be created beside it.",L"Save binary changes",MB_YESNO|MB_ICONWARNING|MB_DEFBUTTON2)!=IDYES)return; auto saved=document_.SaveWithBackup(); if(!saved.succeeded)ShowError(saved.error); else {editing_=false;view_.SetEditable(false);RefreshState();status_.SetText(L"Saved safely. Backup: "+saved.backup_path.wstring());} }
     void ShowError(const std::wstring& text){::MessageBoxW(GetHwnd(),text.c_str(),L"MWFL Hex Editor",MB_OK|MB_ICONERROR);}
-    void RunSelfTest() noexcept { int result=0; try { document_.New({std::byte{0x4d},std::byte{0x57},std::byte{0x46},std::byte{0x4c}}); view_.SetDocument(&document_); view_.SetEditable(true); ::SetFocus(view_.GetHwnd()); ::SendMessageW(view_.GetHwnd(),WM_CHAR,'A',0); ::SendMessageW(view_.GetHwnd(),WM_CHAR,'5',0); if(document_.ByteAt(0)!=std::byte{0xa5}||!document_.IsChanged(0))result=1; if(result==0&&!document_.Undo())result=2; view_.SetAppearance(mwfl::ResolveAppearance({mwfl::ColorMode::dark})); ::InvalidateRect(view_.GetHwnd(),nullptr,TRUE); ::UpdateWindow(view_.GetHwnd()); if(result==0&&!view_.IsWindow())result=3; }catch(...){result=4;} ::PostQuitMessage(result); }
-    hex_editor::HexDocument document_; bool editing_=false; hex_editor::HexView view_; mwfl::Button open_,edit_,save_,save_as_,undo_,search_,go_; mwfl::TextBox find_,offset_; mwfl::Label status_,inspector_;
+    void UpdateZoomLabel(){zoom_reset_.SetText(std::to_wstring(view_.FontPointSize()*100/11)+L"%");}
+    void RunSelfTest() noexcept { int result=0; try { document_.New({std::byte{0x4d},std::byte{0x57},std::byte{0x46},std::byte{0x4c}}); view_.SetDocument(&document_); view_.SetEditable(true); ::SetFocus(view_.GetHwnd()); ::SendMessageW(view_.GetHwnd(),WM_CHAR,'A',0); ::SendMessageW(view_.GetHwnd(),WM_CHAR,'5',0); if(document_.ByteAt(0)!=std::byte{0xa5}||!document_.IsChanged(0))result=1; if(result==0&&!document_.Undo())result=2;
+        std::vector<std::byte> click_test_bytes(64); document_.New(std::move(click_test_bytes)); view_.SetDocument(&document_);
+        HDC dc=::GetDC(view_.GetHwnd()); const int scale=11*::GetDeviceCaps(dc,LOGPIXELSY); HFONT font=::CreateFontW(-MulDiv(11,::GetDeviceCaps(dc,LOGPIXELSY),72),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,FIXED_PITCH,L"Cascadia Mono"); const HGDIOBJ old_font=::SelectObject(dc,font); TEXTMETRICW metrics{}; ::GetTextMetricsW(dc,&metrics); ::SelectObject(dc,old_font); ::DeleteObject(font); ::ReleaseDC(view_.GetHwnd(),dc); const int line=metrics.tmHeight+MulDiv(3,scale,11*96); const int margin=MulDiv(10,scale,11*96),offset_width=MulDiv(102,scale,11*96),byte_width=MulDiv(30,scale,11*96);
+        ::SendMessageW(view_.GetHwnd(),WM_LBUTTONDOWN,MK_LBUTTON,MAKELPARAM(margin+offset_width+3*byte_width+5,margin+3*line+line/2)); if(result==0&&view_.Selection()!=35)result=3;
+        view_.SetAppearance(mwfl::ResolveAppearance({mwfl::ColorMode::dark})); ::InvalidateRect(view_.GetHwnd(),nullptr,TRUE); ::UpdateWindow(view_.GetHwnd()); if(result==0&&!view_.IsWindow())result=4; }catch(...){result=5;} ::PostQuitMessage(result); }
+    hex_editor::HexDocument document_; bool editing_=false; hex_editor::HexView view_; mwfl::Button open_,edit_,save_,save_as_,undo_,search_,go_,zoom_out_,zoom_reset_,zoom_in_; mwfl::TextBox find_,offset_; mwfl::Label status_,inspector_;
 };
 }
 int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int show){ return mwfl::RunApplication<MainWindow>(instance,show,{.title=L"MWFL Hex Editor",.initial_bounds={{},{1120.0_dip,760.0_dip}},.use_default_bounds=false,.icon=::LoadIconW(instance,MAKEINTRESOURCEW(IDI_APP)),.small_icon=::LoadIconW(instance,MAKEINTRESOURCEW(IDI_APP))}); }
