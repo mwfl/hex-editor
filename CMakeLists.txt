@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(hex_editor VERSION 0.1.0 LANGUAGES CXX)
+project(hex_editor VERSION 0.1.2 LANGUAGES CXX)
 
 include(FetchContent)
 option(HEX_EDITOR_USE_LOCAL_MWFL "Use a local mwfl checkout" OFF)
