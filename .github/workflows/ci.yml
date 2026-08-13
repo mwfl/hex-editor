@@ -7,7 +7,7 @@ jobs:
     runs-on: windows-2025-vs2026
     steps:
       - uses: actions/checkout@v5
-      - run: cmake --preset vs2026-x64
+      - run: cmake --preset vs2026-x64 -DHEX_EDITOR_USE_LOCAL_MWFL=OFF
         name: Configure
       - run: cmake --build --preset vs2026-x64-release --parallel 2
         name: Build
