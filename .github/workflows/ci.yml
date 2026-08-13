@@ -1,0 +1,24 @@
+name: CI
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v5
+      - run: cmake --preset vs2022-x64
+        name: Configure
+      - run: cmake --build --preset vs2022-x64-release --parallel 2
+        name: Build
+      - run: ctest --test-dir build/vs2022-x64 -C Release --output-on-failure
+        name: Model tests
+      - name: Package portable app
+        shell: pwsh
+        run: |
+          cmake --install build/vs2022-x64 --config Release --prefix package --component Application
+          Compress-Archive -Path package/* -DestinationPath hex-editor-windows-x64.zip
+      - uses: actions/upload-artifact@v6
+        with:
+          name: hex-editor-windows-x64
+          path: hex-editor-windows-x64.zip
