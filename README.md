@@ -37,7 +37,7 @@ ctest --preset vs2026-x64-release
 
 Visual Studio 2026 with its MSVC C++20 toolchain is the supported build
 environment. The preset uses a neighboring MWFL checkout for development; set
-`HEX_EDITOR_USE_LOCAL_MWFL=OFF` to fetch pinned MWFL v0.1.3. The portable package
+`HEX_EDITOR_USE_LOCAL_MWFL=OFF` to fetch pinned MWFL v0.1.0. The portable package
 has no installer.
 
 ## Editing safety

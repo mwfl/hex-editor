@@ -1,4 +1,6 @@
 #include "hex_view.h"
+#include <windowsx.h>
+
 #include <algorithm>
 #include <array>
 
