@@ -9,7 +9,7 @@ set(MWFL_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 if(HEX_EDITOR_USE_LOCAL_MWFL)
   add_subdirectory("${HEX_EDITOR_MWFL_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/mwfl")
 else()
-  FetchContent_Declare(mwfl GIT_REPOSITORY https://github.com/mwfl/mwfl.git GIT_TAG c5ac538aa04dfe89d9c5ddadc1ab890b667153b5)
+  FetchContent_Declare(mwfl GIT_REPOSITORY https://github.com/mwfl/mwfl.git GIT_TAG v0.2.0)
   FetchContent_MakeAvailable(mwfl)
 endif()
 
