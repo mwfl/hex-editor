@@ -13,10 +13,10 @@ else()
   FetchContent_MakeAvailable(mwfl)
 endif()
 
-add_executable(hex-editor WIN32 main.cpp hex_document.cpp hex_document.h hex_view.cpp hex_view.h hex_editor.rc resource.h app-icon.ico app.manifest)
-target_link_libraries(hex-editor PRIVATE mwfl::ui shell32)
+add_executable(hex-editor WIN32 main.cpp update_checker.cpp update_checker.h hex_document.cpp hex_document.h hex_view.cpp hex_view.h hex_editor.rc resource.h app-icon.ico app.manifest)
+target_link_libraries(hex-editor PRIVATE mwfl::ui shell32 winhttp comctl32 advapi32)
 target_compile_features(hex-editor PRIVATE cxx_std_20)
-target_compile_definitions(hex-editor PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
+target_compile_definitions(hex-editor PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX MWFL_APP_VERSION=L\"${PROJECT_VERSION}\")
 
 enable_testing()
 add_executable(hex-editor-tests hex_document_test.cpp hex_document.cpp hex_document.h)

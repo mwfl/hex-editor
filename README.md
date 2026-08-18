@@ -47,3 +47,11 @@ the in-memory document. Prefer **Save As** while experimenting. **Save + backup*
 replaces the original only after a complete temporary file is written and asks
 Windows to retain the prior content as `<name>.bak`. If the source changed after
 opening, original-file save is rejected.
+
+## Updates and Portable releases
+
+The app checks the latest stable GitHub Release at most once per day. Use **Settings > Automatically Check for Updates** to disable or re-enable checks, or **Check for Updates** to run one manually. An available update can open the official Portable release, be deferred for three days or one week, or dismissed until the next day. Tag releases publish a versioned `windows-x64-portable.zip` plus a SHA-256 checksum; replacement is always an explicit download-and-extract action.
+
+## Updates and Portable releases
+
+The app checks the latest stable GitHub Release at most once per day. Use **Settings > Automatically Check for Updates** to disable or re-enable checks, or **Check for Updates** to run one manually. An available update can open the official Portable release, be deferred for three days or one week, or dismissed until the next day. Tag releases publish a versioned `windows-x64-portable.zip` plus a SHA-256 checksum; replacement is always an explicit download-and-extract action.

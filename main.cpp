@@ -2,12 +2,14 @@
 #include "hex_document.h"
 #include "hex_view.h"
 #include "resource.h"
+#include "update_checker.h"
 #include <shellapi.h>
 #include <memory>
 #include <vector>
 
 using mwfl::operator""_dip;
 namespace {
+mwfl_examples::UpdateChecker g_update_checker;
 constexpr mwfl::ControlId kOpen{100}, kEdit{101}, kSave{102}, kSaveAs{103}, kUndo{104}, kFind{105}, kSearch{106}, kGoto{107}, kOffset{108}, kView{109}, kZoomOut{110}, kZoomReset{111}, kZoomIn{112};
 constexpr UINT kRunSelfTest = WM_APP + 0x381;
 
@@ -29,6 +31,7 @@ public:
         save_.SetEnabled(false); save_as_.SetEnabled(false); undo_.SetEnabled(false);
         mwfl::EnableFileDrop(GetHwnd());
         const auto initial = InitialPath(); if (!initial.empty()) Open(initial);
+        g_update_checker.Attach(GetHwnd(), {L"MWFL Hex Editor", L"hex-editor", MWFL_APP_VERSION, L"Software\\mwfl\\Examples\\HexEditor\\Updates"}, !IsSelfTest());
         if (IsSelfTest()) ::PostMessageW(GetHwnd(),kRunSelfTest,0,0);
     }
     mwfl::EventResult OnCommand(const mwfl::CommandEvent& event) override {
