@@ -2,14 +2,14 @@
 #include "hex_document.h"
 #include "hex_view.h"
 #include "resource.h"
-#include "update_checker.h"
+#include <mwfl/app_support/update_checker.h>
 #include <shellapi.h>
 #include <memory>
 #include <vector>
 
 using mwfl::operator""_dip;
 namespace {
-mwfl_examples::UpdateChecker g_update_checker;
+mwfl::app_support::UpdateChecker g_update_checker;
 constexpr mwfl::ControlId kOpen{100}, kEdit{101}, kSave{102}, kSaveAs{103}, kUndo{104}, kFind{105}, kSearch{106}, kGoto{107}, kOffset{108}, kView{109}, kZoomOut{110}, kZoomReset{111}, kZoomIn{112};
 constexpr UINT kRunSelfTest = WM_APP + 0x381;
 

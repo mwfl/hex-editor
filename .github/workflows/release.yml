@@ -1,32 +1,15 @@
 name: Release
 on:
   push:
-    tags: ["v*"]
-permissions:
-  contents: write
+    tags: ['v*']
 jobs:
   release:
-    runs-on: windows-2025-vs2026
-    steps:
-      - uses: actions/checkout@v5
-      - run: cmake --preset vs2026-x64 -DHEX_EDITOR_USE_LOCAL_MWFL=OFF
-        name: Configure
-      - run: cmake --build --preset vs2026-x64-release --parallel 2
-        name: Build
-      - run: ctest --preset vs2026-x64-release
-        name: Test
-      - name: Package portable app
-        shell: pwsh
-        run: |
-          $archive = "hex-editor-$env:GITHUB_REF_NAME-windows-x64-portable.zip"
-          cmake --install build/vs2026-x64 --config Release --prefix package --component Application
-          Compress-Archive -Path package/* -DestinationPath $archive
-          (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant() + "  " + $archive |
-            Set-Content "$archive.sha256"
-      - name: Publish GitHub Release
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $archive = "hex-editor-$env:GITHUB_REF_NAME-windows-x64-portable.zip"
-          gh release create $env:GITHUB_REF_NAME $archive "$archive.sha256" --verify-tag --generate-notes --title "MWFL Hex Editor $env:GITHUB_REF_NAME"
+    permissions: {contents: write, id-token: write, attestations: write}
+    uses: mwfl/.github/.github/workflows/portable-release.yml@824b78e7b1e880348562bd581f514ec581ba2639
+    with:
+      configure-preset: vs2026-x64
+      build-preset: vs2026-x64-release
+      test-preset: vs2026-x64-release
+      build-directory: build/vs2026-x64
+      artifact-slug: hex-editor
+      release-title: MWFL Hex Editor
