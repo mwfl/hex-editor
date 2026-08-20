@@ -2,11 +2,18 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to rebuild and publish
+        required: true
+        type: string
 jobs:
   release:
     permissions: {contents: write, id-token: write, attestations: write}
-    uses: mwfl/.github/.github/workflows/portable-release.yml@824b78e7b1e880348562bd581f514ec581ba2639
+    uses: mwfl/.github/.github/workflows/portable-release.yml@56b4cd42ab9b47014727a7fcfea1528c538abfb8
     with:
+      release-tag: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
       configure-preset: vs2026-x64
       configure-args: -DHEX_EDITOR_USE_LOCAL_MWFL=OFF
       build-preset: vs2026-x64-release
