@@ -8,6 +8,7 @@ jobs:
     uses: mwfl/.github/.github/workflows/portable-release.yml@824b78e7b1e880348562bd581f514ec581ba2639
     with:
       configure-preset: vs2026-x64
+      configure-args: -DHEX_EDITOR_USE_LOCAL_MWFL=OFF
       build-preset: vs2026-x64-release
       test-preset: vs2026-x64-release
       build-directory: build/vs2026-x64
